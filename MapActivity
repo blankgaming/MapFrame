@@ -1,0 +1,157 @@
+package com.example.admin.mapframe;
+
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.location.Geocoder;
+import android.support.v4.app.FragmentActivity;
+import android.os.Bundle;
+
+import com.google.android.gms.fitness.service.SensorEventDispatcher;
+import com.google.android.gms.identity.intents.Address;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import android.view.View;
+import android.view.Menu;
+import android.widget.EditText;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+    private final LatLng LOCATION_AUT = new LatLng(36.8532, 174.7673);
+    private GoogleMap mMap;
+    private SensorManager sensorManager;
+    private Sensor accelerometer;
+    private float lastX, lastY, lastZ;
+
+    long lastUpdate = 0;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
+
+        //set up accelermeter i.e movement or shaking of phone
+        sensorManager = (SensorManager) this.getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener((SensorEventListener) this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+    }
+
+    public void onAccuracyChanged(Sensor sensor,int accuracy){
+
+    }
+
+    public void onSensoryChange(SensorEvent event){
+        Sensor mySensor = event.sensor;
+
+        if(mySensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            float x = event.values[0]; //the x value
+            float y = event.values[1]; //the y value
+            float z = event.values[2]; //the z value
+
+            //set current time when  user moves the phone around fast
+            long currentTime = System.currentTimeMillis();
+            if(Math.abs(currentTime-lastUpdate) > 2000){
+                SimpleDateFormat date = new SimpleDateFormat("dd-MM-yyyy");
+                String currentDateTime = date.format(new Date());
+
+                lastUpdate = currentTime;
+
+                if(Math.abs(lastX-x)>10){
+                    //if yes then add a marker
+                    mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(40.85, 178.78))
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW))
+                            .title("Moved X axis on"+currentDateTime));
+                }
+
+                if(Math.abs(lastY-y)>10){
+                    //if yes then add a marker
+                    mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(42.85, 180.78))
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                            .title("Moved Y axis on"+currentDateTime));
+                }
+
+                if(Math.abs(lastZ-z)>10){
+                    //if yes then add a marker
+                    mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(44.85, 182.78))
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED))
+                            .title("Moved Z axis on"+currentDateTime));
+                }
+                lastX = x;
+                lastY = y;
+                lastZ = z;
+
+            }
+        }
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        // Add a marker in AUT and move the camera i.e Can mark AUT as a starting point!
+        mMap.addMarker(new MarkerOptions().position(LOCATION_AUT).title("Marker in AUT"));
+        //zooom in the location
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(36.8532, 174.7673), 14.9f));
+    }
+
+    public void onClickLocation(View v) throws IOException {
+        EditText location_tf = (EditText)findViewById(R.id.map);
+        String location = location_tf.getText().toString();
+        List<android.location.Address> addressList = null;
+
+        if(location != null || !location.equals("")){
+            Geocoder gc = new Geocoder(this);
+            try {
+                addressList = gc.getFromLocationName(location, 1);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+            android.location.Address address = addressList.get(0);
+            LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+
+        }
+    }
+
+    public void changeMapTypes(View v){
+        //Set map type to statellite view
+        if(mMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL || mMap.getMapType() == GoogleMap.MAP_TYPE_TERRAIN || mMap.getMapType() == GoogleMap.MAP_TYPE_HYBRID){
+            mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        }
+        //set map type to Terrain
+        else if (mMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL || mMap.getMapType() == GoogleMap.MAP_TYPE_SATELLITE || mMap.getMapType() == GoogleMap.MAP_TYPE_HYBRID){
+            mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        }
+        //set map type to Hybrid
+        else if(mMap.getMapType() == GoogleMap.MAP_TYPE_NORMAL || mMap.getMapType() == GoogleMap.MAP_TYPE_SATELLITE || mMap.getMapType() == GoogleMap.MAP_TYPE_TERRAIN){
+            mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        }
+        //reset to normal
+        else
+            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+    }
+}
