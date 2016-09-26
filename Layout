@@ -1,0 +1,59 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.admin.mapframe.MapsActivity">
+
+    <TextView
+        android:id="@+id/header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""/>
+
+    <fragment
+    android:id="@+id/map"
+    android:name="com.google.android.gms.maps.MapFragment"
+        android:layout_width="match_parent"
+    android:layout_height="@dimen/cast_libraries_material_featurehighlight_text_max_width"
+    tools:context="com.example.admin.mapframe.MapsActivity"
+        tools:layout="@layout/cast_help_text"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        tools:layout_height="450dp" />
+
+    <TextView
+        android:text="@string/location"
+        android:id="@+id/Blocationtyping"
+        android:autoText="false"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_width="wrap_content"
+        android:layout_height="58dp"
+        tools:ignore="TextViewEdits"
+        android:layout_toLeftOf="@+id/Bsearchlocation"
+        android:layout_toStartOf="@+id/Bsearchlocation" />
+
+    <Button
+        android:text="Map Types"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/Bsearchlocation"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/Bmaptypes"
+        android:onClick="ChangeMapTypes" />
+
+    <Button
+        android:text="Search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/Bsearchlocation"
+        android:onClick="onClickLocation (MapsActivity)"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/Bmaptypes"
+        android:layout_toStartOf="@+id/Bmaptypes" />
+
+</RelativeLayout>
